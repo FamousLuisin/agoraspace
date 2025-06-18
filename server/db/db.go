@@ -1,15 +1,18 @@
 package db
 
 import (
-	"context"
 	"errors"
 	"fmt"
 
 	"github.com/FamousLuisin/agoraspace/utils"
-	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/golang-migrate/migrate/v4"
+	"github.com/golang-migrate/migrate/v4/database/postgres"
+	_ "github.com/golang-migrate/migrate/v4/source/file"
+	_ "github.com/jackc/pgx/v5/stdlib"
+	"github.com/jmoiron/sqlx"
 )
 
-func Connection() (*pgxpool.Pool,error){
+func Connection() (*sqlx.DB, error){
 	database, _database := utils.GetEnv("DB_NAME")
 	user, _user := utils.GetEnv("DB_USER")
 	password, _password := utils.GetEnv("DB_PASSWORD")
@@ -19,18 +22,33 @@ func Connection() (*pgxpool.Pool,error){
 	if err := errors.Join(_database, _user, _password, _host, _port); err != nil  {
 		return nil, fmt.Errorf("error getting database environment variables:\n%s", err)
 	}
+	
+	config := fmt.Sprintf("user=%s password=%s dbname=%s host=%s port=%s", user, password, database, host, port)
 
-	dsn := fmt.Sprintf("postgres://%s:%s@%s:%s/%s", user, password, host, port, database)
+	db, _db := sqlx.Connect("pgx", config)
+    
+	if _db != nil {
+		return nil, fmt.Errorf("error connecting to database -> %s", _db)
+	}
 
-    config, err := pgxpool.ParseConfig(dsn)
-    if err != nil {
-        return nil, fmt.Errorf("failed to parse pool config: %w", err)
-    }
+	return db, nil
+}
 
-    pool, err := pgxpool.NewWithConfig(context.Background(), config)
-	if err != nil {
-        return nil, fmt.Errorf("failed to create pool: %w", err)
-    }
+func Migrations(db *sqlx.DB) (error){
+	driver, _driver := postgres.WithInstance(db.DB, &postgres.Config{})
+	if _driver != nil {
+		return fmt.Errorf("error getting driver instance -> %s", _driver)
+	}
 
-	return pool, nil
+	migration, _migration := migrate.NewWithDatabaseInstance("file://./migrates", "agoraspace", driver)
+	if _migration != nil {
+		return fmt.Errorf("error getting the migrate instance -> %s", _migration)
+	}
+
+	_up := migration.Up();
+	if _up != nil {
+		return fmt.Errorf("error running migrate -> %s", _up)
+	}
+
+	return nil
 }
