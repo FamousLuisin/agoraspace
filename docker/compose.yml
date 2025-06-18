@@ -1,0 +1,14 @@
+services:
+  db:
+    image: postgres
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: agoraspace
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin
+    volumes:
+      - agoraspace-data:/var/lib/postgresql/data
+
+volumes:
+  agoraspace-data:

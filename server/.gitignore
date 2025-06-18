@@ -1,0 +1,5 @@
+# Ignore build and bins
+/bin
+
+# Ignore env
+.env
