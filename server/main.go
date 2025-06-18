@@ -1,7 +1,6 @@
 package main
 
 import (
-	"context"
 	"fmt"
 
 	"github.com/FamousLuisin/agoraspace/db"
@@ -20,7 +19,11 @@ func main() {
 	}
 	defer connect.Close()
 
-	if err = connect.Ping(context.Background()); err != nil {
+	if err = connect.Ping(); err != nil {
+		panic(err)
+	}
+
+	if err = db.Migrations(connect); err != nil {
 		panic(err)
 	}
 }
