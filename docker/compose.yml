@@ -1,6 +1,7 @@
 services:
   db:
     image: postgres
+    container_name: database
     ports:
       - "5432:5432"
     environment:
@@ -9,6 +10,11 @@ services:
       POSTGRES_PASSWORD: admin
     volumes:
       - agoraspace-data:/var/lib/postgresql/data
+    networks:
+      - agoraspacenet
 
 volumes:
   agoraspace-data:
+
+networks:
+  agoraspacenet:
