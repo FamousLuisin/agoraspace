@@ -4,7 +4,7 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/FamousLuisin/agoraspace/utils"
+	"github.com/FamousLuisin/agoraspace/internal/utils"
 	"github.com/golang-migrate/migrate/v4"
 	"github.com/golang-migrate/migrate/v4/database/postgres"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
@@ -12,7 +12,11 @@ import (
 	"github.com/jmoiron/sqlx"
 )
 
-func Connection() (*sqlx.DB, error){
+type Database struct {
+	Db *sqlx.DB 
+}
+
+func Connection() (*Database, error){
 	database, _database := utils.GetEnv("DB_NAME")
 	user, _user := utils.GetEnv("DB_USER")
 	password, _password := utils.GetEnv("DB_PASSWORD")
@@ -31,7 +35,9 @@ func Connection() (*sqlx.DB, error){
 		return nil, fmt.Errorf("error connecting to database -> %s", _db)
 	}
 
-	return db, nil
+	return &Database{
+		Db: db,
+	}, nil
 }
 
 func Migrations(db *sqlx.DB) (error){
@@ -40,14 +46,18 @@ func Migrations(db *sqlx.DB) (error){
 		return fmt.Errorf("error getting driver instance -> %s", _driver)
 	}
 
-	migration, _migration := migrate.NewWithDatabaseInstance("file://./migrates", "agoraspace", driver)
+	migration, _migration := migrate.NewWithDatabaseInstance("file://./migrations", "agoraspace", driver)
 	if _migration != nil {
 		return fmt.Errorf("error getting the migrate instance -> %s", _migration)
 	}
 
 	_up := migration.Up();
-	if _up != nil {
+	if _up != nil && _up != migrate.ErrNoChange {
 		return fmt.Errorf("error running migrate -> %s", _up)
+	}
+
+	if _up == migrate.ErrNoChange {
+		fmt.Println("no migration changes to apply.")
 	}
 
 	return nil
