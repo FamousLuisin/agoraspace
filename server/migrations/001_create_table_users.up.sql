@@ -1,0 +1,14 @@
+CREATE TABLE tb_users(
+    id UUID PRIMARY KEY,
+    email VARCHAR(50) NOT NULL UNIQUE,
+    password VARCHAR(255) NOT NULL,
+    name VARCHAR(50) NOT NULL,
+    username VARCHAR(25) NOT NULL UNIQUE,
+    display_name VARCHAR(25) NOT NULL UNIQUE,
+    bio TEXT,
+    birthday DATE NOT NULL,
+    role VARCHAR(20) DEFAULT 'common',
+    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+    deleted_at TIMESTAMPTZ
+);

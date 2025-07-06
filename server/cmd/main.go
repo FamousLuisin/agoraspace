@@ -30,9 +30,9 @@ func main() {
 		log.Fatal(err)
 	}
 
-	gingonic := gin.Default()
+	router := gin.Default()
 
-	routes.InitRoutes(&gingonic.RouterGroup)
+	routes.InitRoutes(&router.RouterGroup, connect)
 
 	port, err := utils.GetEnv("SERVER_HOST")
 
@@ -40,7 +40,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	if err := gingonic.Run(port); err != nil {
+	if err := router.Run(port); err != nil {
 		log.Fatal(err)
 	}
 }
