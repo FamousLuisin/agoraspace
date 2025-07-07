@@ -1,6 +1,8 @@
 package auth
 
 import (
+	"errors"
+	"fmt"
 	"log"
 	"os"
 	"time"
@@ -46,4 +48,27 @@ func GenerateToken(identifier string) (string, error){
 	token := jwt.NewWithClaims(jwt.SigningMethodRS256, claims)
 	
 	return token.SignedString(JWT_PRIVATE_KEY)
+}
+
+func VerifyToken(tokenString string) (*jwt.Token, error){
+	token, err := jwt.Parse(tokenString, func(t *jwt.Token) (interface{}, error) {
+		if _, ok := t.Method.(*jwt.SigningMethodRSA); ok {
+			return JWT_PUBLIC_KEY, nil
+		}
+
+		return nil, nil
+	})
+
+	if err != nil {
+		if errors.Is(err, jwt.ErrTokenMalformed) {
+			return nil, fmt.Errorf("malformed token")
+		}
+		if errors.Is(err, jwt.ErrTokenExpired) || errors.Is(err, jwt.ErrTokenNotValidYet) {
+			return nil, fmt.Errorf("token expired or not valid yet")
+		}
+
+		return nil, fmt.Errorf("token invalid")
+	}
+
+	return token, nil
 }
