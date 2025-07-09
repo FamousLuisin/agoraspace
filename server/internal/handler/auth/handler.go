@@ -3,6 +3,7 @@ package auth
 import (
 	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/FamousLuisin/agoraspace/internal/apperr"
 	"github.com/gin-gonic/gin"
@@ -34,6 +35,17 @@ func (h *authHandler) SignUp(c *gin.Context){
 		c.JSON(errJson.Code, errJson)
 		return
 	}
+
+	parsedBirthday, parse := time.Parse("2006-01-02", ur.BirthdayString)
+	
+	if parse != nil{
+		errMessage := fmt.Sprintf("error when parse birthday: %s", parse.Error())
+		errJson := apperr.NewAppError(errMessage, apperr.ErrBadRequest, http.StatusBadRequest)
+		c.JSON(errJson.Code, errJson)
+		return
+	}
+
+	ur.Birthday = parsedBirthday
 
 	token, err := h.service.SignUp(ur);
 	
