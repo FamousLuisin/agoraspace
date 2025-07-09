@@ -11,7 +11,8 @@ type SignUpRequest struct {
 	ConfirmPassword    string    `json:"confirmPassword"`
 	Username           string    `json:"username"`
 	DisplayName        string    `json:"displayName"`
-	Birthday           time.Time `json:"birthday"`
+	BirthdayString     string    `json:"birthday"`
+	Birthday           time.Time `json:"-"`
 }
 
 type AuthResponse struct {

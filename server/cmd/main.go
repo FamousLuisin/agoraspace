@@ -6,6 +6,7 @@ import (
 	"github.com/FamousLuisin/agoraspace/internal/db"
 	"github.com/FamousLuisin/agoraspace/internal/routes"
 	"github.com/FamousLuisin/agoraspace/internal/utils"
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 )
@@ -31,6 +32,20 @@ func main() {
 	}
 
 	router := gin.Default()
+
+	clientUrl, err := utils.GetEnv("SERVER_CLIENT")
+
+	if err != nil {
+		log.Fatal(err)
+	}
+	
+	router.Use(cors.New(cors.Config{
+		AllowOrigins:     []string{clientUrl},
+		AllowMethods:     []string{"POST", "GET", "PUT", "DELETE"},
+		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization"},
+    	ExposeHeaders:    []string{"Content-Length"},
+    	AllowCredentials: true,
+	}))
 
 	routes.InitRoutes(&router.RouterGroup, connect)
 
