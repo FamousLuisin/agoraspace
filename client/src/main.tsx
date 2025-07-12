@@ -2,11 +2,13 @@ import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import "./index.css";
 import App from "@/App.tsx";
-import { ThemeProvider } from "./components/theme-provider.tsx";
+import { ThemeProvider } from "./context/theme-provider.tsx";
 import { createBrowserRouter } from "react-router-dom";
 import { RouterProvider } from "react-router-dom";
-import Register from "./components/register.tsx";
+import Register from "./routes/register.tsx";
 import Layout from "./components/layout.tsx";
+import Login from "./routes/login.tsx";
+import { AuthProvider } from "./context/auth-provider.tsx";
 
 const router = createBrowserRouter([
   {
@@ -21,6 +23,10 @@ const router = createBrowserRouter([
         path: "/signup",
         Component: Register,
       },
+      {
+        path: "/signin",
+        Component: Login,
+      },
     ],
   },
 ]);
@@ -28,9 +34,11 @@ const router = createBrowserRouter([
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
-      <div className="w-full min-h-screen h-full flex flex-col items-center bg-background dark:bg-background">
-        <RouterProvider router={router} />
-      </div>
+      <AuthProvider>
+        <div className="w-full min-h-screen h-full flex flex-col items-center bg-background dark:bg-background">
+          <RouterProvider router={router} />
+        </div>
+      </AuthProvider>
     </ThemeProvider>
   </StrictMode>
 );
