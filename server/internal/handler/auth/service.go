@@ -54,7 +54,7 @@ func (s *authService) SignUp(ur SignUpRequest) (string, *apperr.AppErr) {
 		return "", apperr.NewAppError(errMessage, apperr.ErrBadRequest, http.StatusBadRequest)
 	}
 
-	tokenString, err := GenerateToken(u.Username)
+	tokenString, err := GenerateToken(u.Id.String())
 	
 	if err != nil {
 		errMessage := fmt.Sprintf("error generating token: %s", err.Error())
@@ -78,7 +78,7 @@ func (s *authService) SignIn(ur SignInRequest) (string, *apperr.AppErr){
 		return "", apperr.NewAppError(errMessage, apperr.ErrBadRequest, http.StatusBadRequest)
 	}
 	
-	tokenString, err := GenerateToken(us.Username)
+	tokenString, err := GenerateToken(us.Id.String())
 	
 	if err != nil {
 		errMessage := fmt.Sprintf("error generating token: %s", err.Error())

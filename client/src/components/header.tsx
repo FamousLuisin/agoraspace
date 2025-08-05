@@ -3,8 +3,15 @@
 import { Button } from "@/components/ui/button";
 import { ModeToggle } from "@/components/mode-toggle";
 import { Link } from "react-router-dom";
+import { useAuth } from "@/context/auth-provider";
 
 export default function Header() {
+  const { isAuth, setAuth } = useAuth();
+
+  const logoutAuth = () => {
+    setAuth(null);
+  };
+
   return (
     <header className="w-11/12 flex justify-between py-4 border-b-1 border-zinc-500 items-center">
       <div className="flex items-center">
@@ -28,16 +35,25 @@ export default function Header() {
           </h1>
         </Link>
       </div>
-      <div className="flex">
-        <nav className="flex gap-2">
-          <Button asChild variant="default">
-            <Link to="/signin">Sign in</Link>
-          </Button>
-          <Button asChild variant="secondary">
-            <Link to="/signup">Sign up</Link>
-          </Button>
-          <ModeToggle />
-        </nav>
+      <div className="flex gap-2">
+        {!isAuth && (
+          <nav className="flex gap-2">
+            <Button asChild variant="default">
+              <Link to="/signin">Sign in</Link>
+            </Button>
+            <Button asChild variant="secondary">
+              <Link to="/signup">Sign up</Link>
+            </Button>
+          </nav>
+        )}
+        {isAuth && (
+          <nav className="flex gap-2">
+            <Button asChild variant="secondary" onClick={logoutAuth}>
+              <Link to="/">Logout</Link>
+            </Button>
+          </nav>
+        )}
+        <ModeToggle />
       </div>
     </header>
   );
