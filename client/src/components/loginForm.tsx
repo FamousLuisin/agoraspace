@@ -39,8 +39,9 @@ export default function LoginForm() {
 
     const url = `${import.meta.env.VITE_API_URL}/auth/signin`;
 
-    const bodyRequest = {
+    const bodyRequest: RequestInit = {
       method: "POST",
+      credentials: "include",
       headers: {
         "Content-Type": "application/json",
       },

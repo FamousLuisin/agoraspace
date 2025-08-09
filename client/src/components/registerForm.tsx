@@ -82,8 +82,9 @@ export default function RegisterForm() {
 
     const url = `${import.meta.env.VITE_API_URL}/auth/signup`;
 
-    const bodyRequest = {
+    const bodyRequest: RequestInit = {
       method: "POST",
+      credentials: "include",
       headers: {
         "Content-Type": "application/json",
       },
