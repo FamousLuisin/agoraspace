@@ -54,6 +54,7 @@ func (h *authHandler) SignUp(c *gin.Context){
 		return
 	}
 
+	c.SetCookie("agoraToken", token, 900, "/", "localhost", false, true)
 	c.JSON(http.StatusCreated, AuthResponse{Token: token})
 }
 
@@ -74,5 +75,6 @@ func (h *authHandler) SignIn (c *gin.Context){
 		return
 	}
 
+	c.SetCookie("agoraToken", token, 900, "/", "localhost", false, true)
 	c.JSON(http.StatusOK, AuthResponse{Token: token})
 }
