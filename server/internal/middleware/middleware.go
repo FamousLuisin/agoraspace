@@ -11,6 +11,10 @@ import (
 )
 
 func VerifyTokenMiddleware(c *gin.Context){
+	if _, ok := c.Get("subject"); ok{
+		return
+	}
+
 	tokenRequest := c.Request.Header.Get("Authorization")
 
 	if tokenRequest == "" || !strings.Contains(tokenRequest, "Bearer ") {
@@ -31,6 +35,26 @@ func VerifyTokenMiddleware(c *gin.Context){
 		return
 	}
 
+	claims := token.Claims.(jwt.MapClaims)
+	c.Set("subject", claims["sub"])
+}
+
+func VerifyCookieTokenMiddleware(c *gin.Context){
+	cookie, err := c.Cookie("agoraToken")
+
+	if err != nil {
+		return
+	}
+
+	token, err := auth.VerifyToken(cookie)
+	
+	if err != nil {
+		errMessage := apperr.NewAppError(err.Error(), apperr.ErrUnauthorized, http.StatusUnauthorized)
+		c.JSON(errMessage.Code, errMessage)
+		c.Abort()
+		return
+	}
+	
 	claims := token.Claims.(jwt.MapClaims)
 	c.Set("subject", claims["sub"])
 }

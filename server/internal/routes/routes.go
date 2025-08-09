@@ -11,7 +11,7 @@ import (
 
 func InitRoutes(r *gin.RouterGroup, db *db.Database){
 	authPath := r.Group("/auth")
-	protectedPath := r.Group("/api", middleware.VerifyTokenMiddleware)
+	protectedPath := r.Group("/api", middleware.VerifyCookieTokenMiddleware, middleware.VerifyTokenMiddleware)
 	
 	r.GET("/version", meta.Version)
 
