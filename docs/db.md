@@ -16,13 +16,13 @@ erDiagram
     tb_preference ||--o{ tb_user_preference : has
 
     tb_forum ||--o{ tb_member : has
-    tb_forum ||--o{ tb_section : has
+    tb_forum ||--o{ tb_topic : has
     tb_forum ||--o{ tb_post : has
     tb_forum ||--o{ tb_tag_forum : has
     tb_forum ||--o{ tb_invite : has
     tb_forum ||--o{ tb_join_request : has
 
-    tb_section ||--o{ tb_post : has
+    tb_topic ||--o{ tb_post : has
 
     tb_post ||--o{ tb_reaction : has
 
@@ -80,7 +80,7 @@ erDiagram
         joined_at TIMESTAMP
     }
 
-    tb_section{
+    tb_topic{
         id UUID PK
         title VARCHAR
         description TEXT
@@ -93,7 +93,7 @@ erDiagram
         id UUID PK
         content TEXT
         forum_id UUID FK
-        section_id UUID FK
+        topic_id UUID FK
         user_id UUID FK
         post_id UUID FK
         created_at TIMESTAMP
