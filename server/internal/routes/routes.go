@@ -18,9 +18,16 @@ func InitRoutes(r *gin.RouterGroup, db *db.Database){
 	userRepository := user.NewUserRepository(db)
 	authService := appAuth.NewAuthService(userRepository)
 	authHandler := appAuth.NewAuthHandler(authService)
+	userService := user.NewUserService(userRepository)
+	userHandler := user.NewUserHandler(userService)
 	
 	authPath.POST("/signup", authHandler.SignUp)
 	authPath.POST("/signin", authHandler.SignIn)
+
+	protectedPath.GET("/user", userHandler.GetUsers)
+	protectedPath.GET("/user/:username", userHandler.GetUserByUsername)
+	protectedPath.PUT("/user/:username", userHandler.UpdateUser)
+	protectedPath.DELETE("/user/:username", userHandler.DeleteUser)
 
 	protectedPath.GET("/version", meta.Version)
 }

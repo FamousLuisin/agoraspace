@@ -58,7 +58,7 @@ func (h *authHandler) SignUp(c *gin.Context){
 	c.JSON(http.StatusCreated, AuthResponse{Token: token})
 }
 
-func (h *authHandler) SignIn (c *gin.Context){
+func (h *authHandler) SignIn(c *gin.Context){
 	var ur SignInRequest
 	
 	if err := c.ShouldBindJSON(&ur); err != nil{

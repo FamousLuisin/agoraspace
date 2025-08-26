@@ -78,6 +78,23 @@ func (s *authService) SignIn(ur SignInRequest) (string, *apperr.AppErr){
 		return "", apperr.NewAppError(errMessage, apperr.ErrBadRequest, http.StatusBadRequest)
 	}
 	
+	if us.DeletedAt.Valid && !ur.Activate {
+		errMessage := "user deleted"
+		return "", apperr.NewAppError(errMessage, apperr.ErrUnauthorized, http.StatusUnauthorized)
+	}
+
+	if !us.DeletedAt.Valid && ur.Activate {
+		errMessage := "user not deleted"
+		return "", apperr.NewAppError(errMessage, apperr.ErrBadRequest, http.StatusBadRequest)
+	}
+
+	if us.DeletedAt.Valid && ur.Activate {
+		if err := s.repository.ActivateUser(*us); err != nil {
+			errMessage := fmt.Sprintf("error activating user: %s", err.Error())
+			return "", apperr.NewAppError(errMessage, apperr.ErrInternalServer, http.StatusInternalServerError)
+		}
+	}
+	
 	tokenString, err := GenerateToken(us.Id.String())
 	
 	if err != nil {

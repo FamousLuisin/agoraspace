@@ -28,3 +28,11 @@ type User struct {
 	UpdatedAt    time.Time    `db:"updated_at"`
 	DeletedAt    sql.NullTime `db:"deleted_at"`
 }
+
+type UserDTO struct {
+	Email       string    `json:"email"`
+	Name        string    `json:"name"`
+	Username    string    `json:"username"`
+	Displayname string    `json:"displayName"`
+	Bio         string    `json:"bio"`
+}
