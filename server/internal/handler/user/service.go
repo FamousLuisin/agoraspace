@@ -29,8 +29,7 @@ func (s *userService) GetUserByUsername(username string) (*UserDTO, *apperr.AppE
 	u, err := s.repository.FindUserByUsername(username)
 
 	if err != nil {
-		errMessage := fmt.Sprintf("error getting user: %s", err.Error())
-		return nil, apperr.NewAppError(errMessage, apperr.ErrBadRequest, http.StatusBadRequest)
+		return nil, apperr.NewAppError(fmt.Sprintf("error getting user: %s", err.Error()), apperr.ErrBadRequest, http.StatusBadRequest)
 	} 
 
 	ur := UserDTO{
@@ -48,8 +47,7 @@ func (s *userService) GetUsers(page, perPage int) (*[]UserDTO, *apperr.AppErr){
 	users, err := s.repository.GetAllUsers(page, perPage)
 
 	if err != nil {
-		errMessage := fmt.Sprintf("error getting users: %s", err.Error())
-		return nil, apperr.NewAppError(errMessage, apperr.ErrBadRequest, http.StatusBadRequest)
+		return nil, apperr.NewAppError(fmt.Sprintf("error getting users: %s", err.Error()), apperr.ErrBadRequest, http.StatusBadRequest)
 	}
 
 	var ur []UserDTO
@@ -73,13 +71,11 @@ func (s userService) UpdateUser(userDTO UserDTO, identifier, username string) *a
 	user, err := s.repository.FindUserByUsername(username)
 
 	if err != nil {
-		errMessage := fmt.Sprintf("error getting users: %s", err.Error())
-		return apperr.NewAppError(errMessage, apperr.ErrBadRequest, http.StatusBadRequest)
+		return apperr.NewAppError(fmt.Sprintf("error getting users: %s", err.Error()), apperr.ErrBadRequest, http.StatusBadRequest)
 	}
 
 	if user.Id.String() != identifier {
-		errMessage := "error validating identifier"
-		return apperr.NewAppError(errMessage, apperr.ErrUnauthorized, http.StatusUnauthorized)
+		return apperr.NewAppError("error validating identifier", apperr.ErrUnauthorized, http.StatusUnauthorized)
 	}
 
 	user.Bio = userDTO.Bio
@@ -88,9 +84,8 @@ func (s userService) UpdateUser(userDTO UserDTO, identifier, username string) *a
 	user.Email = userDTO.Email
 	user.Name = userDTO.Name
 	
-	if err := s.repository.UpdateUser(*user); err != nil{
-		errMessage := fmt.Sprintf("error updating user: %s", err.Error())
-		return apperr.NewAppError(errMessage, apperr.ErrBadRequest, http.StatusBadRequest)
+	if err := s.repository.UpdateUser(*user); err != nil{ 
+		return apperr.NewAppError(fmt.Sprintf("error updating user: %s", err.Error()), apperr.ErrBadRequest, http.StatusBadRequest)
 	}
 
 	return nil
@@ -100,18 +95,15 @@ func (s *userService) DeleteUser(identifier, username string) *apperr.AppErr{
 	user, err := s.repository.FindUserByUsername(username)
 
 	if err != nil {
-		errMessage := fmt.Sprintf("error getting users: %s", err.Error())
-		return apperr.NewAppError(errMessage, apperr.ErrBadRequest, http.StatusBadRequest)
+		return apperr.NewAppError(fmt.Sprintf("error getting users: %s", err.Error()), apperr.ErrBadRequest, http.StatusBadRequest)
 	}
 
 	if user.Id.String() != identifier {
-		errMessage := "error validating identifier"
-		return apperr.NewAppError(errMessage, apperr.ErrUnauthorized, http.StatusUnauthorized)
+		return apperr.NewAppError("error validating identifier", apperr.ErrUnauthorized, http.StatusUnauthorized)
 	}
 
 	if err := s.repository.DeleteUser(*user); err != nil {
-		errMessage := fmt.Sprintf("error deleting user: %s", err.Error())
-		return apperr.NewAppError(errMessage, apperr.ErrInternalServer, http.StatusInternalServerError)
+		return apperr.NewAppError(fmt.Sprintf("error deleting user: %s", err.Error()), apperr.ErrInternalServer, http.StatusInternalServerError)
 	}
 	
 	return nil

@@ -28,15 +28,13 @@ func (s *authService) SignUp(ur SignUpRequest) (string, *apperr.AppErr) {
 	fmt.Println("Chegou no user service")
 
 	if  err := PasswordValidation(ur.Password, ur.ConfirmPassword); err != nil{
-		errMessage := fmt.Sprintf("password validation error: %s", err.Error())
-		return "", apperr.NewAppError(errMessage, apperr.ErrBadRequest, http.StatusBadRequest)
+		return "", apperr.NewAppError(fmt.Sprintf("password validation error: %s", err.Error()), apperr.ErrBadRequest, http.StatusBadRequest)
 	}
 	
 	pw, err := PasswordEncoder(ur.Password)
 
 	if err != nil {
-		errMessage := fmt.Sprintf("password encryption error: %s", err.Error())
-		return "", apperr.NewAppError(errMessage, apperr.ErrInternalServer, http.StatusInternalServerError)
+		return "", apperr.NewAppError(fmt.Sprintf("password encryption error: %s", err.Error()), apperr.ErrInternalServer, http.StatusInternalServerError)
 	}
 	
 	u := user.User{
@@ -50,15 +48,13 @@ func (s *authService) SignUp(ur SignUpRequest) (string, *apperr.AppErr) {
 	}
 
 	if err := s.repository.CreateUser(u); err != nil {
-		errMessage := fmt.Sprintf("error inserting user into database: %s", err.Error())
-		return "", apperr.NewAppError(errMessage, apperr.ErrBadRequest, http.StatusBadRequest)
+		return "", apperr.NewAppError(fmt.Sprintf("error inserting user into database: %s", err.Error()), apperr.ErrBadRequest, http.StatusBadRequest)
 	}
 
 	tokenString, err := GenerateToken(u.Id.String())
 	
 	if err != nil {
-		errMessage := fmt.Sprintf("error generating token: %s", err.Error())
-		return "", apperr.NewAppError(errMessage, apperr.ErrInternalServer, http.StatusInternalServerError)
+		return "", apperr.NewAppError(fmt.Sprintf("error generating token: %s", err.Error()), apperr.ErrInternalServer, http.StatusInternalServerError)
 	}
 
 	return tokenString, nil
@@ -69,37 +65,31 @@ func (s *authService) SignIn(ur SignInRequest) (string, *apperr.AppErr){
 	us, err := s.repository.FindUserByEmail(ur.Email)
 	
 	if err != nil {
-		errMessage := fmt.Sprintf("error geting user: %s", err.Error())
-		return "", apperr.NewAppError(errMessage, apperr.ErrBadRequest, http.StatusBadRequest)
+		return "", apperr.NewAppError(fmt.Sprintf("error geting user: %s", err.Error()), apperr.ErrBadRequest, http.StatusBadRequest)
 	}
 
 	if err := PassowrdMatch(us.Password, ur.Password); err != nil {
-		errMessage := fmt.Sprintf("invalid password: %s", err.Error())
-		return "", apperr.NewAppError(errMessage, apperr.ErrBadRequest, http.StatusBadRequest)
+		return "", apperr.NewAppError(fmt.Sprintf("invalid password: %s", err.Error()), apperr.ErrBadRequest, http.StatusBadRequest)
 	}
 	
 	if us.DeletedAt.Valid && !ur.Activate {
-		errMessage := "user deleted"
-		return "", apperr.NewAppError(errMessage, apperr.ErrUnauthorized, http.StatusUnauthorized)
+		return "", apperr.NewAppError("user deleted", apperr.ErrUnauthorized, http.StatusUnauthorized)
 	}
 
 	if !us.DeletedAt.Valid && ur.Activate {
-		errMessage := "user not deleted"
-		return "", apperr.NewAppError(errMessage, apperr.ErrBadRequest, http.StatusBadRequest)
+		return "", apperr.NewAppError("user not deleted", apperr.ErrBadRequest, http.StatusBadRequest)
 	}
 
 	if us.DeletedAt.Valid && ur.Activate {
 		if err := s.repository.ActivateUser(*us); err != nil {
-			errMessage := fmt.Sprintf("error activating user: %s", err.Error())
-			return "", apperr.NewAppError(errMessage, apperr.ErrInternalServer, http.StatusInternalServerError)
+			return "", apperr.NewAppError(fmt.Sprintf("error activating user: %s", err.Error()), apperr.ErrInternalServer, http.StatusInternalServerError)
 		}
 	}
 	
 	tokenString, err := GenerateToken(us.Id.String())
 	
 	if err != nil {
-		errMessage := fmt.Sprintf("error generating token: %s", err.Error())
-		return "", apperr.NewAppError(errMessage, apperr.ErrInternalServer, http.StatusInternalServerError)
+		return "", apperr.NewAppError(fmt.Sprintf("error generating token: %s", err.Error()), apperr.ErrInternalServer, http.StatusInternalServerError)
 	}
 
 	return tokenString, nil

@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/FamousLuisin/agoraspace/internal/db"
+	"github.com/jmoiron/sqlx"
 )
 
 const (
@@ -45,12 +46,12 @@ const (
 
 func NewUserRepository(db *db.Database) UserRepository {
 	return &userRepository{
-		db: db,
+		db: db.Db,
 	}
 }
 
 type userRepository struct{
-	db *db.Database
+	db *sqlx.DB
 }
 
 type UserRepository interface {
@@ -65,7 +66,7 @@ type UserRepository interface {
 
 func (r *userRepository) CreateUser(us User) error {
 	fmt.Println("Chegou no user Repository")
-	_, err := r.db.Db.Exec(insertUserQuery, us.Id, us.Name, us.Email, us.Password, us.Username, us.DisplayName, us.Bio, us.Birthday)
+	_, err := r.db.Exec(insertUserQuery, us.Id, us.Name, us.Email, us.Password, us.Username, us.DisplayName, us.Bio, us.Birthday)
 	
 	return err	
 }
@@ -73,7 +74,7 @@ func (r *userRepository) CreateUser(us User) error {
 func (r *userRepository) FindUserByEmail(email string) (*User, error){
 	var u User
 
-	err := r.db.Db.Get(&u, findUserByEmailQuery, email)
+	err := r.db.Get(&u, findUserByEmailQuery, email)
 	
 	if err != nil {
 		return nil, err
@@ -85,7 +86,7 @@ func (r *userRepository) FindUserByEmail(email string) (*User, error){
 func (r *userRepository) FindUserByUsername(username string) (*User, error){
 	var u User
 
-	if err := r.db.Db.Get(&u, findUserByUsernameQuery, username); err != nil {
+	if err := r.db.Get(&u, findUserByUsernameQuery, username); err != nil {
 		return nil, err
 	}
 
@@ -95,7 +96,7 @@ func (r *userRepository) FindUserByUsername(username string) (*User, error){
 func (r *userRepository) GetAllUsers(page, perPage int) (*[]User, error){
 	var users []User
 
-	if err := r.db.Db.Select(&users, getAllUsersQuery, page, perPage); err != nil {
+	if err := r.db.Select(&users, getAllUsersQuery, page, perPage); err != nil {
 		return nil, err
 	}
 
@@ -103,7 +104,7 @@ func (r *userRepository) GetAllUsers(page, perPage int) (*[]User, error){
 }
 
 func (r *userRepository) UpdateUser(u User) error {
-	_, err := r.db.Db.Exec(updateUserQuery, u.Email, u.Name, u.Username, u.DisplayName, u.Bio, time.Now(), u.Id)
+	_, err := r.db.Exec(updateUserQuery, u.Email, u.Name, u.Username, u.DisplayName, u.Bio, time.Now(), u.Id)
 
 	if err != nil {
 		return err
@@ -113,7 +114,7 @@ func (r *userRepository) UpdateUser(u User) error {
 }
 
 func (r *userRepository) DeleteUser(u User) error {
-	_, err := r.db.Db.Exec(deleteUserQuery, time.Now(), u.Id)
+	_, err := r.db.Exec(deleteUserQuery, time.Now(), u.Id)
 	
 	if err != nil {
 		return err
@@ -123,7 +124,7 @@ func (r *userRepository) DeleteUser(u User) error {
 }
 
 func (r *userRepository) ActivateUser(u User) error {
-	_, err := r.db.Db.Exec(deleteUserQuery, nil, u.Id)
+	_, err := r.db.Exec(deleteUserQuery, nil, u.Id)
 	
 	if err != nil {
 		return err
