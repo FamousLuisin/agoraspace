@@ -25,8 +25,6 @@ type AuthService interface {
 }
 
 func (s *authService) SignUp(ur SignUpRequest) (string, *apperr.AppErr) {
-	fmt.Println("Chegou no user service")
-
 	if  err := PasswordValidation(ur.Password, ur.ConfirmPassword); err != nil{
 		return "", apperr.NewAppError(fmt.Sprintf("password validation error: %s", err.Error()), apperr.ErrBadRequest, http.StatusBadRequest)
 	}

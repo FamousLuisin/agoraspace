@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/FamousLuisin/agoraspace/internal/apperr"
+	"github.com/google/uuid"
 )
 
 func NewUserService(repository UserRepository) UserService {
@@ -18,6 +19,7 @@ type userService struct {
 }
 
 type UserService interface {
+	GetUserById(identifier string) (*UserDTO, *apperr.AppErr)
 	GetUserByUsername(string) (*UserDTO, *apperr.AppErr)
 	GetUsers(int, int) (*[]UserDTO, *apperr.AppErr)
 	UpdateUser(UserDTO, string, string) *apperr.AppErr
@@ -107,4 +109,26 @@ func (s *userService) DeleteUser(identifier, username string) *apperr.AppErr{
 	}
 	
 	return nil
+}
+
+func (s *userService) GetUserById(identifier string) (*UserDTO, *apperr.AppErr) {
+	_, err := uuid.Parse(identifier)
+
+	if err != nil {
+		return nil, apperr.NewAppError(fmt.Sprintf("uuid invalid: %s", err.Error()), apperr.ErrBadRequest, http.StatusBadRequest)
+	}
+
+	user, err := s.repository.FindUserById(identifier)
+
+	if err != nil {
+		return nil, apperr.NewAppError(fmt.Sprintf("error getting users: %s", err.Error()), apperr.ErrBadRequest, http.StatusBadRequest)
+	}
+	
+	return &UserDTO{
+		Email: user.Email,
+		Name: user.Name,
+		Username: user.Username,
+		Displayname: user.DisplayName,
+		Bio: user.Bio,
+	}, nil
 }

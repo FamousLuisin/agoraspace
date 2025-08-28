@@ -31,6 +31,7 @@ func InitRoutes(r *gin.RouterGroup, db *db.Database){
 
 	protectedPath.GET("/user", userHandler.GetUsers)
 	protectedPath.GET("/user/:username", userHandler.GetUserByUsername)
+	protectedPath.GET("/user/me", userHandler.GetMe)
 	protectedPath.PUT("/user/:username", userHandler.UpdateUser)
 	protectedPath.DELETE("/user/:username", userHandler.DeleteUser)
 

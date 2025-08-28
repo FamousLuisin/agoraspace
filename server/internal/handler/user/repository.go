@@ -1,7 +1,6 @@
 package user
 
 import (
-	"fmt"
 	"time"
 
 	"github.com/FamousLuisin/agoraspace/internal/db"
@@ -22,6 +21,9 @@ const (
 		) VALUES (
 			$1, $2, $3, $4, $5, $6, $7 ,$8
 		)
+	`
+	findUserById = `
+		SELECT * FROM tb_users WHERE id = $1
 	`
 	findUserByEmailQuery = `
 		SELECT * FROM tb_users WHERE email = $1
@@ -56,6 +58,7 @@ type userRepository struct{
 
 type UserRepository interface {
 	CreateUser(User) error
+	FindUserById(string) (*User, error)
 	FindUserByEmail(string) (*User, error)
 	FindUserByUsername(string) (*User, error)
 	GetAllUsers(int, int) (*[]User, error)
@@ -65,7 +68,6 @@ type UserRepository interface {
 }
 
 func (r *userRepository) CreateUser(us User) error {
-	fmt.Println("Chegou no user Repository")
 	_, err := r.db.Exec(insertUserQuery, us.Id, us.Name, us.Email, us.Password, us.Username, us.DisplayName, us.Bio, us.Birthday)
 	
 	return err	
@@ -131,4 +133,16 @@ func (r *userRepository) ActivateUser(u User) error {
 	}
 
 	return nil
+}
+
+func (r *userRepository) FindUserById(identifier string) (*User, error){
+	var u User
+
+	err := r.db.Get(&u, findUserById, identifier)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &u, nil
 }
