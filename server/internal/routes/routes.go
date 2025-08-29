@@ -4,6 +4,7 @@ import (
 	"github.com/FamousLuisin/agoraspace/internal/db"
 	appAuth "github.com/FamousLuisin/agoraspace/internal/handler/auth"
 	"github.com/FamousLuisin/agoraspace/internal/handler/forum"
+	"github.com/FamousLuisin/agoraspace/internal/handler/member"
 	"github.com/FamousLuisin/agoraspace/internal/handler/meta"
 	"github.com/FamousLuisin/agoraspace/internal/handler/user"
 	"github.com/FamousLuisin/agoraspace/internal/middleware"
@@ -14,6 +15,7 @@ type AppHandler struct {
 	userH user.UserHandler
 	forumH forum.ForumHandler
 	authH appAuth.AuthHandler
+	memberH member.MemberHandler
 }
 
 func BuildHandler(db *db.Database) *AppHandler {
@@ -28,10 +30,15 @@ func BuildHandler(db *db.Database) *AppHandler {
 	forumService := forum.NewForumService(forumRepository)
 	forumHandler := forum.NewForumHandler(forumService)
 
+	memberRepository := member.NewMemberRepository(db)
+	memberService := member.NewMemberService(memberRepository, forumRepository)
+	memberHandler := member.NewMamberHandler(memberService)
+
 	return &AppHandler{
 		userH: userHandler,
 		forumH: forumHandler,
 		authH: authHandler,
+		memberH: memberHandler,
 	}
 }
 
@@ -57,6 +64,12 @@ func InitRoutes(r *gin.RouterGroup, db *db.Database){
 	protectedPath.GET("/forum/:id", handlers.forumH.GetForumById)
 	protectedPath.PUT("/forum/:id", handlers.forumH.UpdateForum)
 	protectedPath.DELETE("/forum/:id", handlers.forumH.DeleteForum)
+
+	protectedPath.POST("/joinForum/:id", handlers.memberH.JoinForum)
+	protectedPath.DELETE("/leaveForum/:id", handlers.memberH.LeaveForum)
+	protectedPath.GET("/member/forums/me", handlers.memberH.MyForums)
+	protectedPath.GET("/member/forums/:id", handlers.memberH.ForumsMemberId)
+
 
 	protectedPath.GET("/version", meta.Version)
 }
