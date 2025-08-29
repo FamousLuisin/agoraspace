@@ -1,9 +1,10 @@
-package forum
+package repository
 
 import (
 	"time"
 
 	"github.com/FamousLuisin/agoraspace/internal/db"
+	"github.com/FamousLuisin/agoraspace/internal/models"
 	"github.com/jmoiron/sqlx"
 )
 
@@ -24,6 +25,12 @@ const (
 	`
 	findForumByIdQuery = `
 		SELECT * FROM tb_forums WHERE id = $1
+	`
+	findMemberByForum = `
+		SELECT m.*, u.username, f.title FROM tb_members m
+		JOIN tb_forums f ON m.forum_id = f.id
+		JOIN tb_users u ON u.id = m.user_id
+		WHERE m.forum_id = $1
 	`
 	updateForumQuery = `
 		UPDATE tb_forums
@@ -48,14 +55,14 @@ type forumRepository struct{
 }
 
 type ForumRepository interface{
-	CreateForum(Forum) error
-	GetAllForums(int, int) (*[]Forum, error)
-	FindForumById(string) (*Forum, error)
-	UpdateForum(Forum) error
-	DeleteForum(Forum) error
+	CreateForum(models.Forum) error
+	GetAllForums(int, int) (*[]models.Forum, error)
+	FindForumById(string) (*models.Forum, error)
+	UpdateForum(models.Forum) error
+	DeleteForum(models.Forum) error
 }
 
-func (r *forumRepository) CreateForum(f Forum) error {
+func (r *forumRepository) CreateForum(f models.Forum) error {
 	
 	if _, err := r.db.Exec(insertForumQuery, f.Id, f.Title, f.Description, f.IsPublic, f.Owner, "owner"); err != nil {
 		return err
@@ -64,8 +71,8 @@ func (r *forumRepository) CreateForum(f Forum) error {
 	return nil
 }
 
-func (r *forumRepository) GetAllForums(page, perPage int) (*[]Forum, error){
-	var forums []Forum 
+func (r *forumRepository) GetAllForums(page, perPage int) (*[]models.Forum, error){
+	var forums []models.Forum 
 
 	if err := r.db.Select(&forums, getAllForumsQuery, page, perPage); err != nil {
 		return nil, err
@@ -74,8 +81,8 @@ func (r *forumRepository) GetAllForums(page, perPage int) (*[]Forum, error){
 	return &forums, nil
 }
 
-func (r *forumRepository) FindForumById(forumId string) (*Forum, error) {
-	var f Forum
+func (r *forumRepository) FindForumById(forumId string) (*models.Forum, error) {
+	var f models.Forum
 	
 	if err := r.db.Get(&f, findForumByIdQuery, forumId); err != nil {
 		return nil, err
@@ -84,7 +91,7 @@ func (r *forumRepository) FindForumById(forumId string) (*Forum, error) {
 	return  &f, nil
 }
 
-func (r *forumRepository) UpdateForum(forum Forum) error {
+func (r *forumRepository) UpdateForum(forum models.Forum) error {
 	_, err := r.db.Exec(updateForumQuery, forum.Title, forum.Description, forum.IsPublic, time.Now(), forum.Id, forum.Owner)
 
 	if err != nil {
@@ -94,12 +101,22 @@ func (r *forumRepository) UpdateForum(forum Forum) error {
 	return nil
 }
 
-func (r *forumRepository) DeleteForum(forum Forum) error {
-	_, err := r.db.Exec(deleteForumQuery, Deleted, forum.Id, forum.Owner)
+func (r *forumRepository) DeleteForum(forum models.Forum) error {
+	_, err := r.db.Exec(deleteForumQuery, models.Deleted, forum.Id, forum.Owner)
 
 	if err != nil {
 		return err
 	}
 
 	return nil
+}
+
+func (r *forumRepository) FindMembersByForum(forumId string) (*[]models.Member, error){
+	var members []models.Member
+
+	if err := r.db.Select(&members, findMemberByForum, forumId); err != nil{
+		return nil, err
+	}
+
+	return &members, nil
 }

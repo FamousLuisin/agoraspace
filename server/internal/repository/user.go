@@ -1,9 +1,10 @@
-package user
+package repository
 
 import (
 	"time"
 
 	"github.com/FamousLuisin/agoraspace/internal/db"
+	"github.com/FamousLuisin/agoraspace/internal/models"
 	"github.com/jmoiron/sqlx"
 )
 
@@ -57,24 +58,24 @@ type userRepository struct{
 }
 
 type UserRepository interface {
-	CreateUser(User) error
-	FindUserById(string) (*User, error)
-	FindUserByEmail(string) (*User, error)
-	FindUserByUsername(string) (*User, error)
-	GetAllUsers(int, int) (*[]User, error)
-	UpdateUser(User) error
-	DeleteUser(User) error
-	ActivateUser(User) error
+	CreateUser(models.User) error
+	FindUserById(string) (*models.User, error)
+	FindUserByEmail(string) (*models.User, error)
+	FindUserByUsername(string) (*models.User, error)
+	GetAllUsers(int, int) (*[]models.User, error)
+	UpdateUser(models.User) error
+	DeleteUser(models.User) error
+	ActivateUser(models.User) error
 }
 
-func (r *userRepository) CreateUser(us User) error {
+func (r *userRepository) CreateUser(us models.User) error {
 	_, err := r.db.Exec(insertUserQuery, us.Id, us.Name, us.Email, us.Password, us.Username, us.DisplayName, us.Bio, us.Birthday)
 	
 	return err	
 }
 
-func (r *userRepository) FindUserByEmail(email string) (*User, error){
-	var u User
+func (r *userRepository) FindUserByEmail(email string) (*models.User, error){
+	var u models.User
 
 	err := r.db.Get(&u, findUserByEmailQuery, email)
 	
@@ -85,8 +86,8 @@ func (r *userRepository) FindUserByEmail(email string) (*User, error){
 	return &u, nil
 }
 
-func (r *userRepository) FindUserByUsername(username string) (*User, error){
-	var u User
+func (r *userRepository) FindUserByUsername(username string) (*models.User, error){
+	var u models.User
 
 	if err := r.db.Get(&u, findUserByUsernameQuery, username); err != nil {
 		return nil, err
@@ -95,8 +96,8 @@ func (r *userRepository) FindUserByUsername(username string) (*User, error){
 	return &u, nil
 }
 
-func (r *userRepository) GetAllUsers(page, perPage int) (*[]User, error){
-	var users []User
+func (r *userRepository) GetAllUsers(page, perPage int) (*[]models.User, error){
+	var users []models.User
 
 	if err := r.db.Select(&users, getAllUsersQuery, page, perPage); err != nil {
 		return nil, err
@@ -105,7 +106,7 @@ func (r *userRepository) GetAllUsers(page, perPage int) (*[]User, error){
 	return &users, nil
 }
 
-func (r *userRepository) UpdateUser(u User) error {
+func (r *userRepository) UpdateUser(u models.User) error {
 	_, err := r.db.Exec(updateUserQuery, u.Email, u.Name, u.Username, u.DisplayName, u.Bio, time.Now(), u.Id)
 
 	if err != nil {
@@ -115,7 +116,7 @@ func (r *userRepository) UpdateUser(u User) error {
 	return nil
 }
 
-func (r *userRepository) DeleteUser(u User) error {
+func (r *userRepository) DeleteUser(u models.User) error {
 	_, err := r.db.Exec(deleteUserQuery, time.Now(), u.Id)
 	
 	if err != nil {
@@ -125,7 +126,7 @@ func (r *userRepository) DeleteUser(u User) error {
 	return nil
 }
 
-func (r *userRepository) ActivateUser(u User) error {
+func (r *userRepository) ActivateUser(u models.User) error {
 	_, err := r.db.Exec(deleteUserQuery, nil, u.Id)
 	
 	if err != nil {
@@ -135,8 +136,8 @@ func (r *userRepository) ActivateUser(u User) error {
 	return nil
 }
 
-func (r *userRepository) FindUserById(identifier string) (*User, error){
-	var u User
+func (r *userRepository) FindUserById(identifier string) (*models.User, error){
+	var u models.User
 
 	err := r.db.Get(&u, findUserById, identifier)
 

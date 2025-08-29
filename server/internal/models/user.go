@@ -1,4 +1,4 @@
-package user
+package models
 
 import (
 	"database/sql"
@@ -10,8 +10,8 @@ import (
 type Role string
 
 const (
-	Admin  Role = "admin" 
-	Common Role = "common"
+	administrator  Role = "admin" 
+	Common         Role = "common"
 )
 
 type User struct {

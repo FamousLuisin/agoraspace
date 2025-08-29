@@ -1,4 +1,4 @@
-package forum
+package models
 
 import (
 	"time"
@@ -32,10 +32,10 @@ type ForumRequest struct {
 }
 
 type ForumResponse struct {
-	Id uuid.UUID `json:"id"`
-	Title string `json:"title"`
-	Description string `json:"description"`
-	IsPublic bool `json:"is_public"`
-	Status string `json:"status"`
-	Owner uuid.UUID `json:"owner"`
+	Id          uuid.UUID `json:"id"`
+	Title       string    `json:"title"`
+	Description string    `json:"description"`
+	IsPublic    bool      `json:"is_public"`
+	Status      string    `json:"status"`
+	Owner       uuid.UUID `json:"owner"`
 }

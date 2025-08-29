@@ -5,7 +5,7 @@ import (
 	"strings"
 
 	"github.com/FamousLuisin/agoraspace/internal/apperr"
-	"github.com/FamousLuisin/agoraspace/internal/handler/auth"
+	"github.com/FamousLuisin/agoraspace/internal/services"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
 )
@@ -26,7 +26,7 @@ func VerifyTokenMiddleware(c *gin.Context){
 
 	tokenValue := strings.TrimPrefix(tokenRequest, "Bearer ")
 
-	token, err := auth.VerifyToken(tokenValue)
+	token, err := services.VerifyToken(tokenValue)
 
 	if err != nil {
 		errMessage := apperr.NewAppError(err.Error(), apperr.ErrUnauthorized, http.StatusUnauthorized)
@@ -46,7 +46,7 @@ func VerifyCookieTokenMiddleware(c *gin.Context){
 		return
 	}
 
-	token, err := auth.VerifyToken(cookie)
+	token, err := services.VerifyToken(cookie)
 	
 	if err != nil {
 		errMessage := apperr.NewAppError(err.Error(), apperr.ErrUnauthorized, http.StatusUnauthorized)

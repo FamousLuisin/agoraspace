@@ -1,4 +1,4 @@
-package user
+package handler
 
 import (
 	"errors"
@@ -7,17 +7,19 @@ import (
 	"strconv"
 
 	"github.com/FamousLuisin/agoraspace/internal/apperr"
+	"github.com/FamousLuisin/agoraspace/internal/models"
+	"github.com/FamousLuisin/agoraspace/internal/services"
 	"github.com/gin-gonic/gin"
 )
 
-func NewUserHandler(service UserService) UserHandler {
+func NewUserHandler(service services.UserService) UserHandler {
 	return &userHandler{
 		service: service,
 	}
 }
 
 type userHandler struct {
-	service UserService
+	service services.UserService
 }
 
 type UserHandler interface {
@@ -64,7 +66,7 @@ func (h *userHandler) GetUsers(c *gin.Context){
 }
 
 func (h *userHandler) UpdateUser(c *gin.Context){
-	var u UserDTO
+	var u models.UserDTO
 
 	if err := c.ShouldBindJSON(&u); err != nil {
 		errMessage := fmt.Sprintf("error when binding json: %s", err.Error())

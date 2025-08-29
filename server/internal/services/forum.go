@@ -1,33 +1,35 @@
-package forum
+package services
 
 import (
 	"fmt"
 	"net/http"
 
 	"github.com/FamousLuisin/agoraspace/internal/apperr"
+	"github.com/FamousLuisin/agoraspace/internal/models"
+	"github.com/FamousLuisin/agoraspace/internal/repository"
 	"github.com/google/uuid"
 )
 
-func NewForumService(repository ForumRepository) ForumService {
+func NewForumService(repository repository.ForumRepository) ForumService {
 	return &forumService{
 		repository: repository,
 	}
 }
 
 type forumService struct {
-	repository ForumRepository
+	repository repository.ForumRepository
 }
 
 type ForumService interface {
-	CreateForum(ForumRequest, string) *apperr.AppErr
-	GetAllForums(int, int) (*[]ForumResponse, *apperr.AppErr)
-	GetForumById(string) (*ForumResponse, *apperr.AppErr)
-	UpdateForum(ForumRequest, string, string) (*ForumResponse, *apperr.AppErr)
+	CreateForum(models.ForumRequest, string) *apperr.AppErr
+	GetAllForums(int, int) (*[]models.ForumResponse, *apperr.AppErr)
+	GetForumById(string) (*models.ForumResponse, *apperr.AppErr)
+	UpdateForum(models.ForumRequest, string, string) (*models.ForumResponse, *apperr.AppErr)
 	DeleteForum(string, string) *apperr.AppErr
 }
 
-func (s *forumService) CreateForum(forumR ForumRequest, identifier string) *apperr.AppErr{
-	forum := Forum{
+func (s *forumService) CreateForum(forumR models.ForumRequest, identifier string) *apperr.AppErr{
+	forum := models.Forum{
 		Id: uuid.New(),
 		Title: forumR.Title,
 		Description: forumR.Description,
@@ -42,17 +44,17 @@ func (s *forumService) CreateForum(forumR ForumRequest, identifier string) *appe
 	return nil
 }
 
-func (s *forumService) GetAllForums(page, perPage int) (*[]ForumResponse, *apperr.AppErr){
+func (s *forumService) GetAllForums(page, perPage int) (*[]models.ForumResponse, *apperr.AppErr){
 	forums, err := s.repository.GetAllForums(page, perPage)
 
 	if err != nil {
 		return nil, apperr.NewAppError(fmt.Sprintf("error getting forums: %s", err.Error()), apperr.ErrNotFound, http.StatusNotFound)
 	}
 
-	var forumsResponse []ForumResponse
+	var forumsResponse []models.ForumResponse
 
 	for _, f := range *forums {
-		forumR := ForumResponse{
+		forumR := models.ForumResponse{
 			Id: f.Id,
 			Title: f.Title,
 			Description: f.Description,
@@ -67,7 +69,7 @@ func (s *forumService) GetAllForums(page, perPage int) (*[]ForumResponse, *apper
 	return &forumsResponse, nil
 }
 
-func (s *forumService) GetForumById(forumId string) (*ForumResponse, *apperr.AppErr) {
+func (s *forumService) GetForumById(forumId string) (*models.ForumResponse, *apperr.AppErr) {
 	_, err := uuid.Parse(forumId)
 
 	if err != nil {
@@ -80,7 +82,7 @@ func (s *forumService) GetForumById(forumId string) (*ForumResponse, *apperr.App
 		return nil, apperr.NewAppError(fmt.Sprintf("forum not found: %s", err.Error()), apperr.ErrNotFound, http.StatusNotFound)
 	}
 
-	return &ForumResponse{
+	return &models.ForumResponse{
 		Id: forum.Id,
 		Title: forum.Title,
 		Description: forum.Description,
@@ -90,7 +92,7 @@ func (s *forumService) GetForumById(forumId string) (*ForumResponse, *apperr.App
 	}, nil
 }
 
-func (s *forumService) UpdateForum(forumR ForumRequest, identifier, forumId string) (*ForumResponse, *apperr.AppErr) {
+func (s *forumService) UpdateForum(forumR models.ForumRequest, identifier, forumId string) (*models.ForumResponse, *apperr.AppErr) {
 
 	_, err := uuid.Parse(forumId)
 
@@ -118,7 +120,7 @@ func (s *forumService) UpdateForum(forumR ForumRequest, identifier, forumId stri
 		return nil, apperr.NewAppError(fmt.Sprintf("error updating forum: %s", err.Error()), apperr.ErrBadRequest, http.StatusBadRequest)
 	}
 
-	return &ForumResponse{
+	return &models.ForumResponse{
 		Id: forum.Id,
 		Title: forum.Title,
 		Description: forum.Description,

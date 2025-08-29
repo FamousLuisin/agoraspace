@@ -1,7 +1,8 @@
-package member
+package repository
 
 import (
 	"github.com/FamousLuisin/agoraspace/internal/db"
+	"github.com/FamousLuisin/agoraspace/internal/models"
 	"github.com/jmoiron/sqlx"
 )
 
@@ -39,14 +40,14 @@ type memberRepository struct {
 }
 
 type MemberRepository interface {
-	InsertMember(Member) error
+	InsertMember(models.Member) error
 	LeaveForum(string, string) error
 	ReturnForum(string, string) error
-	FindMember(string, string) (*Member, error)
-	FindForumsByMember(string) (*[]Member, error)
+	FindMember(string, string) (*models.Member, error)
+	FindForumsByMember(string) (*[]models.Member, error)
 }
 
-func (r *memberRepository) InsertMember(member Member) error {
+func (r *memberRepository) InsertMember(member models.Member) error {
 	_, err := r.db.Exec(insertMemberQuery, member.UserId, member.ForumId, member.Role)
 
 	if err != nil {
@@ -76,8 +77,8 @@ func (r *memberRepository) ReturnForum(forumId, userId string) error{
 	return nil
 }
 
-func (r *memberRepository) FindMember(userId, forumId string) (*Member, error) {
-	var m Member
+func (r *memberRepository) FindMember(userId, forumId string) (*models.Member, error) {
+	var m models.Member
 
 	if err := r.db.Get(&m, findMemberQuery, userId, forumId); err != nil {
 		return nil, err
@@ -86,8 +87,8 @@ func (r *memberRepository) FindMember(userId, forumId string) (*Member, error) {
 	return &m, nil
 }
 
-func (r *memberRepository) FindForumsByMember(userId string) (*[]Member, error) {
-	var m []Member
+func (r *memberRepository) FindForumsByMember(userId string) (*[]models.Member, error) {
+	var m []models.Member
 
 	if err := r.db.Select(&m, findForumsByMemberQuery, userId); err != nil {
 		return nil, err

@@ -1,4 +1,4 @@
-package auth
+package handler
 
 import (
 	"fmt"
@@ -6,17 +6,19 @@ import (
 	"time"
 
 	"github.com/FamousLuisin/agoraspace/internal/apperr"
+	"github.com/FamousLuisin/agoraspace/internal/models"
+	"github.com/FamousLuisin/agoraspace/internal/services"
 	"github.com/gin-gonic/gin"
 )
 
-func NewAuthHandler(service AuthService) AuthHandler {
+func NewAuthHandler(service services.AuthService) AuthHandler {
 	return &authHandler{
 		service: service,
 	}
 }
 
 type authHandler struct{
-	service AuthService
+	service services.AuthService
 }
 
 type AuthHandler interface {
@@ -25,7 +27,7 @@ type AuthHandler interface {
 }
 
 func (h *authHandler) SignUp(c *gin.Context){
-	var ur SignUpRequest
+	var ur models.SignUpRequest
 
 	if err := c.ShouldBindJSON(&ur); err != nil {
 		errMessage := fmt.Sprintf("error when binding json: %s", err.Error())
@@ -53,11 +55,11 @@ func (h *authHandler) SignUp(c *gin.Context){
 	}
 
 	c.SetCookie("agoraToken", token, 900, "/", "localhost", false, true)
-	c.JSON(http.StatusCreated, AuthResponse{Token: token})
+	c.JSON(http.StatusCreated, models.AuthResponse{Token: token})
 }
 
 func (h *authHandler) SignIn(c *gin.Context){
-	var ur SignInRequest
+	var ur models.SignInRequest
 	
 	if err := c.ShouldBindJSON(&ur); err != nil{
 		errMessage := fmt.Sprintf("error when binding json: %s", err.Error())
@@ -74,5 +76,5 @@ func (h *authHandler) SignIn(c *gin.Context){
 	}
 
 	c.SetCookie("agoraToken", token, 900, "/", "localhost", false, true)
-	c.JSON(http.StatusOK, AuthResponse{Token: token})
+	c.JSON(http.StatusOK, models.AuthResponse{Token: token})
 }
