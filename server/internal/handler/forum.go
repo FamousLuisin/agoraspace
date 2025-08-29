@@ -1,4 +1,4 @@
-package forum
+package handler
 
 import (
 	"errors"
@@ -7,17 +7,19 @@ import (
 	"strconv"
 
 	"github.com/FamousLuisin/agoraspace/internal/apperr"
+	"github.com/FamousLuisin/agoraspace/internal/models"
+	"github.com/FamousLuisin/agoraspace/internal/services"
 	"github.com/gin-gonic/gin"
 )
 
-func NewForumHandler(service ForumService) ForumHandler {
+func NewForumHandler(service services.ForumService) ForumHandler {
 	return &forumHandler{
 		service: service,
 	}
 }
 
 type forumHandler struct {
-	service ForumService
+	service services.ForumService
 }
 
 type ForumHandler interface {
@@ -29,7 +31,7 @@ type ForumHandler interface {
 }
 
 func (h *forumHandler) CreateForum(c *gin.Context){
-	var f ForumRequest
+	var f models.ForumRequest
 
 	if err := c.ShouldBindJSON(&f); err != nil {
 		errJson := apperr.NewAppError(fmt.Sprintf("error when binding json: %s", err.Error()), apperr.ErrBadRequest, http.StatusBadRequest)
@@ -86,7 +88,7 @@ func (h *forumHandler) GetForumById(c *gin.Context) {
 }
 
 func (h *forumHandler) UpdateForum(c *gin.Context) {
-	var forumRequest ForumRequest
+	var forumRequest models.ForumRequest
 
 	if err := c.ShouldBindJSON(&forumRequest); err != nil {
 		errJson := apperr.NewAppError(fmt.Sprintf("error when binding json: %s", err.Error()), apperr.ErrBadRequest, http.StatusBadRequest)

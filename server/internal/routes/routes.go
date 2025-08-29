@@ -2,37 +2,35 @@ package routes
 
 import (
 	"github.com/FamousLuisin/agoraspace/internal/db"
-	appAuth "github.com/FamousLuisin/agoraspace/internal/handler/auth"
-	"github.com/FamousLuisin/agoraspace/internal/handler/forum"
-	"github.com/FamousLuisin/agoraspace/internal/handler/member"
-	"github.com/FamousLuisin/agoraspace/internal/handler/meta"
-	"github.com/FamousLuisin/agoraspace/internal/handler/user"
+	"github.com/FamousLuisin/agoraspace/internal/handler"
 	"github.com/FamousLuisin/agoraspace/internal/middleware"
+	"github.com/FamousLuisin/agoraspace/internal/repository"
+	"github.com/FamousLuisin/agoraspace/internal/services"
 	"github.com/gin-gonic/gin"
 )
 
 type AppHandler struct {
-	userH user.UserHandler
-	forumH forum.ForumHandler
-	authH appAuth.AuthHandler
-	memberH member.MemberHandler
+	userH handler.UserHandler
+	forumH handler.ForumHandler
+	authH handler.AuthHandler
+	memberH handler.MemberHandler
 }
 
 func BuildHandler(db *db.Database) *AppHandler {
-	userRepository := user.NewUserRepository(db)
-	userService := user.NewUserService(userRepository)
-	userHandler := user.NewUserHandler(userService)
+	userRepository := repository.NewUserRepository(db)
+	userService := services.NewUserService(userRepository)
+	userHandler := handler.NewUserHandler(userService)
 
-	authService := appAuth.NewAuthService(userRepository)
-	authHandler := appAuth.NewAuthHandler(authService)
+	authService := services.NewAuthService(userRepository)
+	authHandler := handler.NewAuthHandler(authService)
 
-	forumRepository := forum.NewForumRepository(db)
-	forumService := forum.NewForumService(forumRepository)
-	forumHandler := forum.NewForumHandler(forumService)
+	forumRepository := repository.NewForumRepository(db)
+	forumService := services.NewForumService(forumRepository)
+	forumHandler := handler.NewForumHandler(forumService)
 
-	memberRepository := member.NewMemberRepository(db)
-	memberService := member.NewMemberService(memberRepository, forumRepository)
-	memberHandler := member.NewMamberHandler(memberService)
+	memberRepository := repository.NewMemberRepository(db)
+	memberService := services.NewMemberService(memberRepository, forumRepository)
+	memberHandler := handler.NewMamberHandler(memberService)
 
 	return &AppHandler{
 		userH: userHandler,
@@ -48,7 +46,7 @@ func InitRoutes(r *gin.RouterGroup, db *db.Database){
 	authPath := r.Group("/auth")
 	protectedPath := r.Group("/api", middleware.VerifyCookieTokenMiddleware, middleware.VerifyTokenMiddleware)
 	
-	r.GET("/version", meta.Version)
+	r.GET("/version", handler.Version)
 	
 	authPath.POST("/signup", handlers.authH.SignUp)
 	authPath.POST("/signin", handlers.authH.SignIn)
@@ -71,5 +69,5 @@ func InitRoutes(r *gin.RouterGroup, db *db.Database){
 	protectedPath.GET("/member/forums/:id", handlers.memberH.ForumsMemberId)
 
 
-	protectedPath.GET("/version", meta.Version)
+	protectedPath.GET("/version", handler.Version)
 }

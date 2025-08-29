@@ -1,19 +1,20 @@
-package member
+package handler
 
 import (
 	"net/http"
 
+	"github.com/FamousLuisin/agoraspace/internal/services"
 	"github.com/gin-gonic/gin"
 )
 
-func NewMamberHandler(service MemberService) MemberHandler {
+func NewMamberHandler(service services.MemberService) MemberHandler {
 	return &memberHandler{
 		service: service,
 	}
 }
 
 type memberHandler struct {
-	service MemberService
+	service services.MemberService
 }
 
 type MemberHandler interface {

@@ -1,15 +1,16 @@
-package member
+package services
 
 import (
 	"fmt"
 	"net/http"
 
 	"github.com/FamousLuisin/agoraspace/internal/apperr"
-	"github.com/FamousLuisin/agoraspace/internal/handler/forum"
+	"github.com/FamousLuisin/agoraspace/internal/models"
+	"github.com/FamousLuisin/agoraspace/internal/repository"
 	"github.com/google/uuid"
 )
 
-func NewMemberService(mr MemberRepository, fr forum.ForumRepository) MemberService {
+func NewMemberService(mr repository.MemberRepository, fr repository.ForumRepository) MemberService {
 	return &memberService{
 		memberRepository: mr,
 		forumRepository: fr,
@@ -17,14 +18,14 @@ func NewMemberService(mr MemberRepository, fr forum.ForumRepository) MemberServi
 }
 
 type memberService struct {
-	memberRepository MemberRepository
-	forumRepository  forum.ForumRepository
+	memberRepository repository.MemberRepository
+	forumRepository  repository.ForumRepository
 }
 
 type MemberService interface {
 	JoinForum(string, string) *apperr.AppErr
 	LeaveForum(string, string) *apperr.AppErr
-	FindForumsByMember(string) (*[]Member, *apperr.AppErr)
+	FindForumsByMember(string) (*[]models.Member, *apperr.AppErr)
 }
 
 func (s *memberService) JoinForum(identifier, forumStr string) *apperr.AppErr{
@@ -40,7 +41,7 @@ func (s *memberService) JoinForum(identifier, forumStr string) *apperr.AppErr{
 		return apperr.NewAppError(fmt.Sprintf("forum not found: %s", err.Error()), apperr.ErrNotFound, http.StatusNotFound)
 	}
 
-	if !f.IsPublic && f.Status != forum.Active {
+	if !f.IsPublic || f.Status != models.Active {
 		return apperr.NewAppError("unauthorized entry", apperr.ErrUnauthorized, http.StatusUnauthorized)
 	}
 
@@ -54,9 +55,9 @@ func (s *memberService) JoinForum(identifier, forumStr string) *apperr.AppErr{
 		return nil
 	}
 
-	err = s.memberRepository.InsertMember(Member{
+	err = s.memberRepository.InsertMember(models.Member{
 		UserId: uuid.MustParse(identifier),
-		Role: Participant,
+		Role: models.Participant,
 		ForumId: forumId,
 	})
 
@@ -87,7 +88,7 @@ func (s *memberService) LeaveForum(identifier, forumStr string) *apperr.AppErr {
 	return nil
 }
 
-func (s *memberService) FindForumsByMember(identifier string) (*[]Member, *apperr.AppErr){
+func (s *memberService) FindForumsByMember(identifier string) (*[]models.Member, *apperr.AppErr){
 	_, err := uuid.Parse(identifier)
 
 	if err != nil {

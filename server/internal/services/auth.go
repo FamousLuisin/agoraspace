@@ -1,30 +1,31 @@
-package auth
+package services
 
 import (
 	"fmt"
 	"net/http"
 
 	"github.com/FamousLuisin/agoraspace/internal/apperr"
-	"github.com/FamousLuisin/agoraspace/internal/handler/user"
+	"github.com/FamousLuisin/agoraspace/internal/models"
+	"github.com/FamousLuisin/agoraspace/internal/repository"
 	"github.com/google/uuid"
 )
 
-func NewAuthService(repository user.UserRepository) AuthService {
+func NewAuthService(repository repository.UserRepository) AuthService {
 	return &authService{
 		repository: repository,
 	}
 }
 
 type authService struct {
-	repository user.UserRepository
+	repository repository.UserRepository
 }
 
 type AuthService interface {
-	SignUp(SignUpRequest) (string, *apperr.AppErr)
-	SignIn(SignInRequest) (string, *apperr.AppErr)
+	SignUp(models.SignUpRequest) (string, *apperr.AppErr)
+	SignIn(models.SignInRequest) (string, *apperr.AppErr)
 }
 
-func (s *authService) SignUp(ur SignUpRequest) (string, *apperr.AppErr) {
+func (s *authService) SignUp(ur models.SignUpRequest) (string, *apperr.AppErr) {
 	if  err := PasswordValidation(ur.Password, ur.ConfirmPassword); err != nil{
 		return "", apperr.NewAppError(fmt.Sprintf("password validation error: %s", err.Error()), apperr.ErrBadRequest, http.StatusBadRequest)
 	}
@@ -35,7 +36,7 @@ func (s *authService) SignUp(ur SignUpRequest) (string, *apperr.AppErr) {
 		return "", apperr.NewAppError(fmt.Sprintf("password encryption error: %s", err.Error()), apperr.ErrInternalServer, http.StatusInternalServerError)
 	}
 	
-	u := user.User{
+	u := models.User{
 		Id: uuid.New(),
 		Name: ur.Name,
 		Email: ur.Email,
@@ -58,7 +59,7 @@ func (s *authService) SignUp(ur SignUpRequest) (string, *apperr.AppErr) {
 	return tokenString, nil
 }
 
-func (s *authService) SignIn(ur SignInRequest) (string, *apperr.AppErr){
+func (s *authService) SignIn(ur models.SignInRequest) (string, *apperr.AppErr){
 	
 	us, err := s.repository.FindUserByEmail(ur.Email)
 	
