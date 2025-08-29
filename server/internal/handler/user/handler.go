@@ -21,6 +21,7 @@ type userHandler struct {
 }
 
 type UserHandler interface {
+	GetMe(c *gin.Context)
 	GetUserByUsername(*gin.Context)
 	GetUsers(*gin.Context)
 	UpdateUser(*gin.Context)
@@ -95,4 +96,18 @@ func (h *userHandler) DeleteUser(c *gin.Context){
 	}
 
 	c.JSON(http.StatusOK, gin.H{"deleted": true})
+}
+
+func (h *userHandler) GetMe(c *gin.Context){
+	identifier, _ := c.Get("subject")
+	identifierStr := identifier.(string)
+
+	user, err := h.service.GetUserById(identifierStr)
+
+	if err != nil {
+		c.JSON(err.Code, err)
+		return
+	}
+
+	c.JSON(http.StatusOK, user)
 }

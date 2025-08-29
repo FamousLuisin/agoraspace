@@ -10,35 +10,53 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+type AppHandler struct {
+	userH user.UserHandler
+	forumH forum.ForumHandler
+	authH appAuth.AuthHandler
+}
+
+func BuildHandler(db *db.Database) *AppHandler {
+	userRepository := user.NewUserRepository(db)
+	userService := user.NewUserService(userRepository)
+	userHandler := user.NewUserHandler(userService)
+
+	authService := appAuth.NewAuthService(userRepository)
+	authHandler := appAuth.NewAuthHandler(authService)
+
+	forumRepository := forum.NewForumRepository(db)
+	forumService := forum.NewForumService(forumRepository)
+	forumHandler := forum.NewForumHandler(forumService)
+
+	return &AppHandler{
+		userH: userHandler,
+		forumH: forumHandler,
+		authH: authHandler,
+	}
+}
+
 func InitRoutes(r *gin.RouterGroup, db *db.Database){
+	handlers := BuildHandler(db)
+	
 	authPath := r.Group("/auth")
 	protectedPath := r.Group("/api", middleware.VerifyCookieTokenMiddleware, middleware.VerifyTokenMiddleware)
 	
 	r.GET("/version", meta.Version)
-
-	userRepository := user.NewUserRepository(db)
-	authService := appAuth.NewAuthService(userRepository)
-	authHandler := appAuth.NewAuthHandler(authService)
-	userService := user.NewUserService(userRepository)
-	userHandler := user.NewUserHandler(userService)
-	forumRepository := forum.NewForumRepository(db)
-	forumService := forum.NewForumService(forumRepository)
 	
-	forumHandler := forum.NewForumHandler(forumService)
-	
-	authPath.POST("/signup", authHandler.SignUp)
-	authPath.POST("/signin", authHandler.SignIn)
+	authPath.POST("/signup", handlers.authH.SignUp)
+	authPath.POST("/signin", handlers.authH.SignIn)
 
-	protectedPath.GET("/user", userHandler.GetUsers)
-	protectedPath.GET("/user/:username", userHandler.GetUserByUsername)
-	protectedPath.PUT("/user/:username", userHandler.UpdateUser)
-	protectedPath.DELETE("/user/:username", userHandler.DeleteUser)
+	protectedPath.GET("/user", handlers.userH.GetUsers)
+	protectedPath.GET("/user/:username", handlers.userH.GetUserByUsername)
+	protectedPath.GET("/user/me", handlers.userH.GetMe)
+	protectedPath.PUT("/user/:username", handlers.userH.UpdateUser)
+	protectedPath.DELETE("/user/:username", handlers.userH.DeleteUser)
 
-	protectedPath.POST("/forum", forumHandler.CreateForum)
-	protectedPath.GET("/forums", forumHandler.GetAllForums)
-	protectedPath.GET("/forum/:id", forumHandler.GetForumById)
-	protectedPath.PUT("/forum/:id", forumHandler.UpdateForum)
-	protectedPath.DELETE("/forum/:id", forumHandler.DeleteForum)
+	protectedPath.POST("/forum", handlers.forumH.CreateForum)
+	protectedPath.GET("/forums", handlers.forumH.GetAllForums)
+	protectedPath.GET("/forum/:id", handlers.forumH.GetForumById)
+	protectedPath.PUT("/forum/:id", handlers.forumH.UpdateForum)
+	protectedPath.DELETE("/forum/:id", handlers.forumH.DeleteForum)
 
 	protectedPath.GET("/version", meta.Version)
 }

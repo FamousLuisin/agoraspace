@@ -25,8 +25,6 @@ type AuthHandler interface {
 }
 
 func (h *authHandler) SignUp(c *gin.Context){
-	fmt.Println("Chegou no user Handler")
-
 	var ur SignUpRequest
 
 	if err := c.ShouldBindJSON(&ur); err != nil {
